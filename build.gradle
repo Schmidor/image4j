@@ -1,0 +1,85 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'maven-publish'
+
+sourceCompatibility = 8
+targetCompatibility = 8
+
+version = '0.7.2.2'
+group = 'com.github.imcdonagh'
+
+repositories {
+  mavenCentral()
+}
+
+dependencies {  
+  testImplementation 'junit:junit:4.12'
+}
+
+def getDate() {
+  def date = new Date()
+  def formattedDate = date.format('yyyy-MM-dd HH:mm')
+  return formattedDate
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
+jar {
+  manifest {
+    attributes "Build-Date": getDate()
+    attributes "Implementation-Version": version
+  }
+}
+
+tasks.withType(JavaCompile) { options.encoding = "UTF-8" }
+tasks.withType(Javadoc).all { enabled = false }
+
+sourceSets {  
+  main {
+    java {   
+      srcDirs = ['src']
+    }
+    resources {
+      srcDirs = ['src']
+    }
+  }
+  
+  test {
+    java {   
+      srcDirs = ['test']
+    }
+    resources {
+      srcDirs = ['test']
+    }
+  }
+}
+
+publishing {
+  repositories {
+    maven {
+      name = "OwnRepository"
+  	  url = uri("${ownRepositoryURL}")
+  	  credentials {
+        username = "${ownRepositoryUsername}"
+        password = "${ownRepositoryPassword}"
+      }
+    }
+    maven {
+      name = "GitHubPackages"
+      url = uri("https://maven.pkg.github.com/${githubUsername}/image4j")
+      credentials {
+        username = "${githubUsername}"
+        password = "${githubToken}"
+      }
+    }
+  }
+  publications {
+	maven(MavenPublication) {
+	  artifactId = 'image4j'
+	  from components.java
+	}
+  }
+}
